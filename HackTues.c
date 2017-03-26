@@ -1,88 +1,67 @@
-int fanPin = 3;
-int inPin = 7;
-int fanstate = 0;
-int buttoncurrentstate = 0;
-int buttonprevstate = LOW;
+int fanPin = 11; 
+int redPin = 10, greenPin = 9, bluePin = 8;
+int buttonPin = 7;
+int fanState = 0;
+int buttonCurrentState = 0;
+int buttonPrevState = LOW;
 int tresshold = 50;
-int waterlevel = A1;
-
-
+int waterLevel;
+int waterSensor = A1;
 
 
 void setup() {
-  
-  analogRead(waterlevel);
-  pinMode(fanPin, OUTPUT);
-  pinMode(inPin, INPUT_PULLUP);
+
+  for(int i = 8; i <= 11; i++){
+    pinMode(i, OUTPUT); 
+  }
+ 
+  pinMode(buttonPin, INPUT_PULLUP);
   Serial.begin(9600);
 
 }
 
-void setUpFan(){
+void turnOnOffFan(int turnOnOff){
+  digitalWrite(fanPin, turnOnOff);
+}
 
-  digitalWrite(fanPin, HIGH);
-  //delay(5000);
-  //digitalWrite(fanPin, LOW); 
+void setRGBColor(int color, int turnOnOff){
  
+  for(int i = 8; i <= 10; i++){
+    digitalWrite(i, LOW);
+  }
+ 
+  digitalWrite(color, HIGH);
+  turnOnOffFan(turnOnOff);
 }
 
 void loop() {
 
-  
+  buttonPrevState = buttonCurrentState;
+  buttonCurrentState = digitalRead(buttonPin);
+  waterLevel = analogRead(waterSensor);
+
  
-  /*
-  val = digitalRead(inPin);
-  if (val == HIGH){
-  digitalWrite(fanPin, LOW);
-  } else {
-    digitalWrite(fanPin, HIGH);
+  if (buttonCurrentState == LOW && buttonPrevState == HIGH){ 
+    if(fanState == 2){
+      fanState = 0;
+    }else{
+      fanState++;
+    }
   }
-  */
-  buttonprevstate = buttoncurrentstate;
-  buttoncurrentstate = digitalRead(inPin);
-  waterlevel = analogRead(A1);
 
-  
-if (buttoncurrentstate == LOW && buttonprevstate == HIGH){   
-   fanstate++;
-   Serial.println((int)fanstate);
-}
-
-
-switch(fanstate){
-  case 0 : 
-    digitalWrite(fanPin, LOW);
-    break;
-  case 1 : 
-    setUpFan();
-    break;//digitalWrite(fanPin, LOW); 
-  case 2 : 
-    //Serial.println(tresshold);
-    if(waterlevel > tresshold)
-      setUpFan();
-      //digitalWrite(fanPin, HIGH);
-    else
-      digitalWrite(fanPin, LOW);  
-
-    break;
-  case 3 : 
-      fanstate = 0;
-      break;  
-}
-
-/*if(fanstate == 0){
-  
-}
-
-if(fanstate == 1){
-   
-}
-if(fanstate == 2){
-  
-}
-
-if(fanstate == 4){
-   
-}*/ 
-//Serial.println((int)waterlevel);
+  switch(fanState){
+    case 0 :
+      setRGBColor(redPin, LOW);
+      break;
+    case 1 :
+      setRGBColor(greenPin, HIGH);
+      break;
+    case 2 :
+      if(waterLevel > tresshold){
+        setRGBColor(bluePin, HIGH);
+      }else{
+        setRGBColor(redPin, LOW); 
+      }
+      break;
+  }
 }
